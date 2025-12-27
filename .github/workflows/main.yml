@@ -27,15 +27,14 @@ jobs:
 
     - name: Run mlflow project
       run: |
-        # KUNCI PERBAIKAN: 
-        # Kita mengarahkan ke direktori ./MLProject agar MLflow mencari file 'MLProject' di dalamnya.
-        # Ini akan menghilangkan error IsADirectoryError.
+        # Jalankan MLflow dengan menunjuk ke direktori folder MLProject
+        # Ini akan memicu file MLProject di dalamnya dan menjalankan modelling.py
         mlflow run ./MLProject --env-manager=local
 
     - name: Get latest MLflow run_id
       run: |
-        # MLflow membuat folder mlruns di tempat perintah dijalankan.
-        # Karena kita menjalankan dari root, folder mlruns ada di mlruns/
+        # Folder mlruns akan muncul otomatis di lokasi eksekusi (root)
+        # Cari folder 32 karakter hex (ID eksperimen)
         RUN_ID=$(find mlruns/0 -maxdepth 1 -type d -printf '%P\n' | grep -E '^[0-9a-f]{32}$' | head -n 1)
         echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
         echo "Latest run_id: $RUN_ID"
@@ -44,7 +43,7 @@ jobs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        # Menambahkan folder mlruns yang otomatis muncul setelah mlflow run berhasil
+        # Tambahkan folder mlruns agar muncul di repo GitHub Anda
         git add mlruns/
         git commit -m "Upload mlruns results [skip ci]" || echo "No changes to commit"
         git push origin main
