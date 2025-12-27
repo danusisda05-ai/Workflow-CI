@@ -1,4 +1,4 @@
-name: Eksekusi Projek ML Lengkap
+name: Eksekusi Projek ML Final
 
 on:
   push:
@@ -23,16 +23,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install mlflow scikit-learn pandas numpy matplotlib
 
-      - name: Run Modelling
-        # Kita selesaikan masalah MLflow MissingConfig di sini
+      - name: Temukan dan Jalankan Modelling
         run: |
-          cd Folder-3/MLProject
+          # Mencari lokasi file modelling.py secara otomatis
+          SCRIPT_PATH=$(find . -name "modelling.py" | head -n 1)
+          SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
           
-          # 1. Hapus folder mlruns lama jika terbawa dari upload (penyebab error meta.yaml)
+          echo "File ditemukan di: $SCRIPT_PATH"
+          echo "Berpindah ke folder: $SCRIPT_DIR"
+          
+          # Pindah ke folder tempat file berada dan bersihkan mlruns
+          cd "$SCRIPT_DIR"
           rm -rf mlruns
-          
-          # 2. Paksa MLflow gunakan SQLite agar lebih stabil di GitHub Actions
           export MLFLOW_TRACKING_URI=sqlite:///mlflow.db
           
-          # 3. Jalankan script
+          # Jalankan script
           python modelling.py
