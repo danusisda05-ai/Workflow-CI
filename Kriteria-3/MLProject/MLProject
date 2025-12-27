@@ -1,7 +1,0 @@
-name: insurance-cost-project
-
-conda_env: conda.yaml
-
-entry_points:
-  main:
-    command: "python3 modelling.py"
