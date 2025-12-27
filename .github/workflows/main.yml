@@ -23,34 +23,32 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # Tambahkan 'docker' agar mlflow bisa build image
           pip install mlflow scikit-learn pandas joblib dagshub docker 
 
       - name: Run MLflow Project
         env:
+          # Pastikan secret ini berisi TOKEN dari DagsHub
           MLFLOW_TRACKING_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
           MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
         run: |
-          # Arahkan ke DagsHub agar tidak tersimpan lokal saja
-          export MLFLOW_TRACKING_URI="https://dagshub.com/${{ secrets.DAGSHUB_USERNAME }}/insurance_danu.mlflow"
+          # URL disesuaikan dengan gambar: danusisda05-ai/insurance_danu
+          export MLFLOW_TRACKING_URI="https://dagshub.com/danusisda05-ai/insurance_danu.mlflow"
           mlflow run MLProject --env-manager=local
 
       - name: Get latest MLflow run_id
         id: get_id
         run: |
-          # Perbaikan: Cek folder sebelum ambil ID untuk cegah Exit 1
           if [ -d "mlruns/0" ]; then
             RUN_ID=$(ls -td mlruns/0/*/ | grep -Eo '[0-9a-f]{32}' | head -n 1)
             echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
             echo "Latest run_id found: $RUN_ID"
           else
-            echo "Error: Folder mlruns/0 tidak ditemukan. Training gagal."
+            echo "Error: Folder mlruns/0 tidak ditemukan."
             exit 1
           fi
 
       - name: Build Docker Model
         run: |
-          # Membungkus model menjadi image Docker siap saji
           mlflow models build-docker \
             --model-uri "runs:/${{ env.RUN_ID }}/model" \
             --name insurance_danu_model
@@ -63,6 +61,7 @@ jobs:
 
       - name: Push Docker Image
         run: |
+          # Menggunakan username Docker Hub dari Secrets
           docker tag insurance_danu_model ${{ secrets.DOCKER_USERNAME }}/insurance_danu_model:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/insurance_danu_model:latest
 
