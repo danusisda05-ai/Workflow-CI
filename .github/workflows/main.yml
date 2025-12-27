@@ -36,17 +36,16 @@ jobs:
           # Login Dagshub
           python -c "import dagshub; dagshub.auth.add_app_token('$D_TOKEN')"
           
-          # Jalankan training dan ambil RUN_ID
+          # Jalankan training
           mlflow run MLProject --env-manager=local | tee run_output.txt
+          
+          # Ambil RUN_ID
           RUN_ID=$(grep -oE "[0-9a-f]{32}" run_output.txt | head -n 1)
-          
-          if [ -z "$RUN_ID" ]; then
-            echo "Gagal mendapatkan Run ID!"
-            exit 1
-          fi
-          
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
-          echo "Berhasil mendapatkan Run ID: $RUN_ID"
+          
+          # DEBUG: Cek folder apa saja yang ada di DagsHub untuk Run ID ini
+          echo "Daftar folder di DagsHub untuk ID $RUN_ID:"
+          mlflow artifacts list --run-id $RUN_ID
 
       - name: Build Docker Model
         env:
@@ -54,10 +53,8 @@ jobs:
           MLFLOW_TRACKING_USERNAME: "danusisda05-ai"
           MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
         run: |
-          # Menggunakan model-uri langsung ke artifacts yang tersimpan di DagsHub
-          # Jika di file modelling.py kamu menggunakan mlflow.sklearn.log_model(..., artifact_path="model_insurance"), 
-          # maka ganti /model di bawah ini menjadi /model_insurance
-          
+          # Gunakan RUN_ID yang sudah didapat
+          # Kita gunakan path 'model' (biasanya default MLflow)
           mlflow models build-docker \
             --model-uri "runs:/${{ env.RUN_ID }}/model" \
             --name insurance_danu_model
