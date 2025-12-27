@@ -27,8 +27,13 @@ jobs:
 
     - name: Run mlflow project
       run: |
-        # Jalankan MLflow dengan menunjuk ke direktori folder MLProject
-        # Ini akan memicu file MLProject di dalamnya dan menjalankan modelling.py
+        echo "--- Mengecek Lokasi File ---"
+        ls -R ./MLProject
+        
+        echo "--- Mengecek Isi File MLProject ---"
+        cat ./MLProject/MLProject
+        
+        echo "--- Menjalankan MLflow ---"
         mlflow run ./MLProject --env-manager=local
 
     - name: Get latest MLflow run_id
