@@ -1,0 +1,33 @@
+artifact_path: file:C:/Users/danu sisda rafiyandi/Downloads/Kriteria-3/mlruns/0/models/m-3a53edcb26334cc897e105622722ad3d/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.13.3
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.7.0
+is_signature_from_type_hint: false
+mlflow_version: 3.8.0
+model_id: m-3a53edcb26334cc897e105622722ad3d
+model_size_bytes: 9655891
+model_uuid: m-3a53edcb26334cc897e105622722ad3d
+prompts: null
+run_id: 42a8813b903e426abe2dd32e907219d7
+signature:
+  inputs: '[{"type": "double", "name": "0", "required": true}, {"type": "double",
+    "name": "1", "required": true}, {"type": "double", "name": "2", "required": true},
+    {"type": "double", "name": "3", "required": true}, {"type": "double", "name":
+    "4", "required": true}, {"type": "double", "name": "5", "required": true}, {"type":
+    "double", "name": "6", "required": true}, {"type": "double", "name": "7", "required":
+    true}]'
+  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "float64", "shape": [-1]}}]'
+  params: null
+type_hint_from_example: false
+utc_time_created: '2025-12-27 02:35:39.099002'
