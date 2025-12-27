@@ -27,39 +27,32 @@ jobs:
 
       - name: Run MLflow Project
         env:
-          # Pastikan nama secret di GitHub Settings sama persis dengan di bawah ini
-          D_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
         run: |
-          # Set URI Tracking DagsHub sesuai gambar (insurance_danu)
           export MLFLOW_TRACKING_URI="https://dagshub.com/danusisda05-ai/insurance_danu.mlflow"
           export MLFLOW_TRACKING_USERNAME="danusisda05-ai"
-          export MLFLOW_TRACKING_PASSWORD="$D_TOKEN"
+          export MLFLOW_TRACKING_PASSWORD="$DAGSHUB_TOKEN"
           
-          # Autentikasi paksa agar tidak Error 403
-          python -c "import dagshub; dagshub.auth.add_app_token('$D_TOKEN')"
+          # Login Dagshub
+          python -c "import dagshub; dagshub.auth.add_app_token('$DAGSHUB_TOKEN')"
           
-          # Jalankan training
-          mlflow run MLProject --env-manager=local
-
-      - name: Get latest MLflow run_id
-        id: get_id
-        run: |
-          if [ -d "mlruns/0" ]; then
-            RUN_ID=$(ls -td mlruns/0/*/ | grep -Eo '[0-9a-f]{32}' | head -n 1)
-            echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
-          else
-            echo "Folder mlruns/0 tidak ditemukan!"
-            exit 1
-          fi
+          # Jalankan training dan simpan outputnya untuk ambil RUN_ID
+          # Ini cara paling aman agar RUN_ID tidak hilang
+          mlflow run MLProject --env-manager=local > run_output.txt
+          cat run_output.txt
+          
+          # Ekstrak RUN_ID dari log output
+          RUN_ID=$(grep -oE "Run with ID '[0-9a-f]{32}'" run_output.txt | grep -oE "[0-9a-f]{32}")
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          echo "Captured Run ID: $RUN_ID"
 
       - name: Build Docker Model
         env:
-          # Memberitahu MLflow untuk mencari model di DagsHub, bukan di folder lokal
-          MLFLOW_TRACKING_URI: "https://dagshub.com/danusisda05-ai/insurance_danu.mlflow"
-          MLFLOW_TRACKING_USERNAME: "danusisda05-ai"
+          MLFLOW_TRACKING_URI="https://dagshub.com/danusisda05-ai/insurance_danu.mlflow"
+          MLFLOW_TRACKING_USERNAME="danusisda05-ai"
           MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
         run: |
-          # Ambil model langsung dari DagsHub menggunakan RUN_ID yang baru saja dibuat
+          # Pastikan MLflow mencari ke DagsHub, bukan lokal
           mlflow models build-docker \
             --model-uri "runs:/${{ env.RUN_ID }}/model" \
             --name insurance_danu_model
