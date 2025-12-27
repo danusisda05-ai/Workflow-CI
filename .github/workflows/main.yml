@@ -32,7 +32,7 @@ jobs:
           MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
         run: |
           # Arahkan ke DagsHub agar tidak tersimpan lokal saja
-          export MLFLOW_TRACKING_URI="https://dagshub.com/${{ secrets.DAGSHUB_USERNAME }}/insurance_prediction.mlflow"
+          export MLFLOW_TRACKING_URI="https://dagshub.com/${{ secrets.DAGSHUB_USERNAME }}/insurance_danu.mlflow"
           mlflow run MLProject --env-manager=local
 
       - name: Get latest MLflow run_id
