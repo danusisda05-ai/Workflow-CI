@@ -27,16 +27,18 @@ jobs:
 
       - name: Run MLflow Project
         env:
-          MLFLOW_TRACKING_USERNAME: "danusisda05-ai"
-          MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
+          # Pastikan nama secret di GitHub Settings sama persis dengan di bawah ini
+          D_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
         run: |
-          # URL Tracking sesuai dengan gambar DagsHub Anda
+          # Set URI Tracking DagsHub sesuai gambar (insurance_danu)
           export MLFLOW_TRACKING_URI="https://dagshub.com/danusisda05-ai/insurance_danu.mlflow"
+          export MLFLOW_TRACKING_USERNAME="danusisda05-ai"
+          export MLFLOW_TRACKING_PASSWORD="$D_TOKEN"
           
-          # Autentikasi menggunakan token Anda
-          python -c "import dagshub; dagshub.auth.add_app_token('${{ secrets.DAGSHUB_TOKEN }}')"
+          # Autentikasi paksa agar tidak Error 403
+          python -c "import dagshub; dagshub.auth.add_app_token('$D_TOKEN')"
           
-          # Menjalankan training di MLProject
+          # Jalankan training
           mlflow run MLProject --env-manager=local
 
       - name: Get latest MLflow run_id
@@ -45,9 +47,8 @@ jobs:
           if [ -d "mlruns/0" ]; then
             RUN_ID=$(ls -td mlruns/0/*/ | grep -Eo '[0-9a-f]{32}' | head -n 1)
             echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
-            echo "Latest run_id found: $RUN_ID"
           else
-            echo "Error: Folder mlruns/0 tidak ditemukan. Cek log Run MLflow Project di atas."
+            echo "Folder mlruns/0 tidak ditemukan!"
             exit 1
           fi
 
